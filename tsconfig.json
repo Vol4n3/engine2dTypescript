@@ -1,0 +1,9 @@
+{
+  "files": [
+    "app/code/*.ts"
+  ],
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "target": "es6"
+  }
+}

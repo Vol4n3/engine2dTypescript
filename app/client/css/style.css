@@ -1,0 +1,13 @@
+body, html {
+  background-color: transparent;
+  margin: 0;
+  display: inline-block; }
+
+canvas {
+  display: block; }
+
+#scene {
+  width: 1280px;
+  height: 720px; }
+
+/*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic3R5bGUuY3NzIiwic291cmNlcyI6WyJzdHlsZS5zY3NzIl0sInNvdXJjZXNDb250ZW50IjpbImJvZHksaHRtbHtcclxuICBiYWNrZ3JvdW5kLWNvbG9yOiB0cmFuc3BhcmVudDtcclxuICBtYXJnaW46IDA7XHJcbiAgZGlzcGxheTogaW5saW5lLWJsb2NrO1xyXG59XHJcbmNhbnZhc3tcclxuICBkaXNwbGF5OiBibG9jaztcclxuXHJcbn1cclxuI3NjZW5le1xyXG4gIHdpZHRoOiAxMjgwcHg7XHJcbiAgaGVpZ2h0OiA3MjBweDtcclxuXHJcbn0iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQSxJQUFJLEVBQUMsQUFBQSxJQUFJLENBQUE7RUFDUCxnQkFBZ0IsRUFBRSxXQUFXO0VBQzdCLE1BQU0sRUFBRSxDQUFDO0VBQ1QsT0FBTyxFQUFFLFlBQVksR0FDdEI7O0FBQ0QsQUFBQSxNQUFNLENBQUE7RUFDSixPQUFPLEVBQUUsS0FBSyxHQUVmOztBQUNELEFBQUEsTUFBTSxDQUFBO0VBQ0osS0FBSyxFQUFFLE1BQU07RUFDYixNQUFNLEVBQUUsS0FBSyxHQUVkIn0= */
