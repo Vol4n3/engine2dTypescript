@@ -195,6 +195,7 @@ class Scene {
         this.scene.appendChild(this.canvas);
         this.resume();
         requestAnimationFrame(this.draw.bind(this));
+        requestAnimationFrame(this.update.bind(this));
     }
     add(item, id) {
         this.drawList.push({
@@ -219,6 +220,16 @@ class Scene {
     toggle() {
         this.isPlaying = !this.isPlaying;
     }
+    update() {
+        if (this.isPlaying) {
+            for (let d in this.drawList) {
+                let draw = this.drawList[d].item;
+                if (draw.isCollide)
+                    this.checkCollision(draw, d);
+            }
+        }
+        requestAnimationFrame(this.update.bind(this));
+    }
     draw() {
         if (this.isPlaying) {
             if (this.clearFrame)
@@ -231,8 +242,6 @@ class Scene {
                 draw.draw(this.context);
                 this.context.closePath();
                 this.context.restore();
-                if (draw.isCollide)
-                    this.checkCollision(draw, d);
             }
         }
         requestAnimationFrame(this.draw.bind(this));
@@ -247,7 +256,8 @@ class Scene {
     checkCollision(item, i) {
         for (let d in this.drawList) {
             let draw = this.drawList[d].item;
-            if (draw != item && draw.isCollide && !this.searchBufferDraws(i, d)) {
+            // todo: optimise && !this.searchBufferDraws(i,d)
+            if (draw != item && draw.isCollide) {
                 item.collisionTo(draw);
                 this.bufferDraws.push(i + "-" + d);
             }
@@ -460,7 +470,7 @@ player.masse = 0.1;
 player.color = "green";
 for (let i = 0; i < 10; i++) {
     let p = new Point_1.Point(200, 200);
-    p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.1)';
+    p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.8)';
     p.size = 20;
     //p.velocity.setX(Math.random()*20-10);
     p.velocity.setY(Math.random() * 20 - 10);

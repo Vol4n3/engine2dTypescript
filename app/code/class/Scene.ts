@@ -23,6 +23,7 @@ export class Scene {
         this.scene.appendChild(this.canvas);
         this.resume();
         requestAnimationFrame(this.draw.bind(this));
+        requestAnimationFrame(this.update.bind(this));
     }
 
     public add(item: Drawable, id?: string) {
@@ -52,7 +53,15 @@ export class Scene {
     public toggle() {
         this.isPlaying = !this.isPlaying;
     }
-
+    private update(): void{
+        if(this.isPlaying){
+            for (let d in this.drawList) {
+                let draw = this.drawList[d].item;
+                if (draw.isCollide) this.checkCollision(draw, d);
+            }
+        }
+        requestAnimationFrame(this.update.bind(this));
+    }
     private draw(): void {
         if (this.isPlaying) {
             if (this.clearFrame) this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
@@ -64,7 +73,6 @@ export class Scene {
                 draw.draw(this.context);
                 this.context.closePath();
                 this.context.restore();
-                if (draw.isCollide) this.checkCollision(draw, d);
             }
         }
         requestAnimationFrame(this.draw.bind(this));
@@ -78,7 +86,8 @@ export class Scene {
     private checkCollision(item: Drawable, i: any): void {
         for (let d in this.drawList) {
             let draw = this.drawList[d].item;
-            if (draw != item && draw.isCollide && !this.searchBufferDraws(i,d)) {
+            // todo: optimise && !this.searchBufferDraws(i,d)
+            if (draw != item && draw.isCollide ) {
                 item.collisionTo(draw);
                 this.bufferDraws.push(i+"-"+d);
             }
