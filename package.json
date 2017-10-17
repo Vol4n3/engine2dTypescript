@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2"
+    "@types/three": "^0.84.27",
+    "express": "^4.16.2",
+    "three": "^0.87.1"
   },
   "devDependencies": {
     "babelify": "^7.3.0",

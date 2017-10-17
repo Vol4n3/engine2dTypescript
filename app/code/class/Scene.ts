@@ -1,4 +1,3 @@
-
 import {Drawable, DrawList} from "./interfaces";
 
 export class Scene {
@@ -6,9 +5,11 @@ export class Scene {
     public scene: HTMLElement;
     public canvas: HTMLCanvasElement;
     public context: CanvasRenderingContext2D;
+    public clearFrame: boolean = true;
     private drawList: DrawList[] = [];
     private isPlaying: boolean;
-    public clearFrame: boolean = true;
+    private bufferDraws: string[] = [];
+
     constructor(id: string) {
         this.init(id);
     }
@@ -23,12 +24,23 @@ export class Scene {
         this.resume();
         requestAnimationFrame(this.draw.bind(this));
     }
-    public add(item: Drawable, id?: string){
+
+    public add(item: Drawable, id?: string) {
         this.drawList.push({
-            item : item,
-            id : id
+            item: item,
+            id: id
         })
     }
+
+    removeItem(id: string) {
+        for (let i in this.drawList) {
+            if (this.drawList[i].id === id) {
+                delete this.drawList[i];
+                break;
+            }
+        }
+    }
+
     public resume() {
         this.isPlaying = true;
     }
@@ -42,8 +54,9 @@ export class Scene {
     }
 
     private draw(): void {
-        if(this.isPlaying){
-            if(this.clearFrame) this.context.clearRect(0,0,this.getWidth(),this.getHeight());
+        if (this.isPlaying) {
+            if (this.clearFrame) this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
+            this.bufferDraws = [];
             for (let d in this.drawList) {
                 let draw = this.drawList[d].item;
                 this.context.save();
@@ -51,14 +64,27 @@ export class Scene {
                 draw.draw(this.context);
                 this.context.closePath();
                 this.context.restore();
-                if(draw.isCollide) this.checkCollision(draw);
+                if (draw.isCollide) this.checkCollision(draw, d);
             }
         }
         requestAnimationFrame(this.draw.bind(this));
     }
-    private checkCollision(item: Drawable){
-
+    private searchBufferDraws(a: any,b: any): boolean{
+        for(let i in this.bufferDraws){
+            if (this.bufferDraws[i] === a+"-"+b || this.bufferDraws[i] === b+"-"+a) return true;
+        }
+        return false;
     }
+    private checkCollision(item: Drawable, i: any): void {
+        for (let d in this.drawList) {
+            let draw = this.drawList[d].item;
+            if (draw != item && draw.isCollide && !this.searchBufferDraws(i,d)) {
+                item.collisionTo(draw);
+                this.bufferDraws.push(i+"-"+d);
+            }
+        }
+    }
+
     private resize() {
         this.canvas.width = this.getWidth();
         this.canvas.height = this.getHeight();

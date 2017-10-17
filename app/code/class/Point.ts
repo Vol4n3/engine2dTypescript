@@ -1,28 +1,52 @@
 import {Drawable} from "./interfaces";
 import {Vector} from "./Vector";
+import {Segment} from "./Segment";
 
 export class Point implements Drawable {
-
-    public isCollide: boolean;
+    public dName: string = "Point";
+    public isCollide: boolean = false;
     public targetPos: Point;
     public size: number = 10;
     public color: string = "red";
     public velocity: Vector = new Vector();
-    public gravity: Vector = new Vector(0, 2);
-    public checkBox: boolean = true;
-    public bounce: number = -0.8;
+    public gravity: Vector = new Vector();
+    public isCollisionToBox: boolean = true;
+    public groundBounce: number = -0.85;
+    public friction: Vector = new Vector(0.95, 0.95);
     public isGround: boolean = false;
+    public forcesList: Vector[] = [];
+    public moveSpeed: number = 0;
+    public bounce: number = 0.90;
+    public masse: number = 1;
     private isTargeting: boolean = false;
     private distanceTemp: number = 0;
-    private moveSpeed: number = 1;
-
+    private groundForce: Vector = new Vector();
 
     constructor(public x: number = 0, public y: number = 0, public clear?: boolean) {
 
     }
 
+    collisionTo(object: Drawable): void {
+        if (object.dName === "Point") {
+            if (this.intersectToPoint(<Point>object)) {
+                this.collisionToPoint(<Point>object);
+            }
+        }
+    }
+    collisionToPoint(p: Point){
+        let lineIntersect = new Segment(this,p);
+        lineIntersect.setLength(this.size + p.size,true);
+        this.giveForce(p);
+    }
+    public giveForce(object: any): void {
+        if (object.dName === "Point") {
+            let RatioMasse: number = this.masse / object.masse;
+
+        }
+    }
+
     private bounceOnBox(w: number, h: number) {
-        this.isGround = false;
+        this.groundForce = new Vector(0, 0);
 
         let posXmax = this.x + this.size;
         let posXmin = this.x - this.size;
@@ -31,29 +55,33 @@ export class Point implements Drawable {
         let posYmin = this.y - this.size;
 
         if (posXmax > w) {
-            this.x =  w - this.size + 1;
-            this.velocity.setX(this.velocity.getX() * this.bounce);
+            this.x = w - this.size + this.gravity.getX();
+            this.velocity.setX(this.velocity.getX() * this.groundBounce);
+            this.groundForce.setX(-this.gravity.getX());
         }
         if (posXmin < 0) {
-            this.x = this.size + 1;
-            this.velocity.setX(this.velocity.getX() * this.bounce);
+            this.x = this.size + this.gravity.getX();
+            this.velocity.setX(this.velocity.getX() * this.groundBounce);
+            this.groundForce.setX(-this.gravity.getX());
         }
         if (posYmax > h) {
-            this.y = h - this.size + 1;
-            this.velocity.setY(this.velocity.getY() * this.bounce);
-            this.isGround = true;
+            this.y = h - this.size + this.gravity.getY();
+            this.velocity.setY(this.velocity.getY() * this.groundBounce);
+            this.groundForce.setY(-this.gravity.getY());
         }
         if (posYmin < 0) {
-            this.y = this.size +1 ;
-            this.velocity.setY(this.velocity.getY() * this.bounce);
-
+            this.y = this.size + this.gravity.getY();
+            this.velocity.setY(this.velocity.getY() * this.groundBounce);
+            this.groundForce.setY(-this.gravity.getY());
         }
     }
 
     public update(): void {
-        if (!this.isGround) this.velocity.add(this.gravity);
-        this.translate(this.velocity.x, this.velocity.y);
+        this.addForce(this.gravity);
+        this.addForce(this.groundForce);
+        this.velocity.multiply(this.friction);
         this.travel();
+        this.translate(this.velocity.x, this.velocity.y);
     }
 
     public checkDraw(w: number, h: number): boolean {
@@ -72,13 +100,20 @@ export class Point implements Drawable {
             ctx.fillStyle = this.color;
             ctx.fill();
         }
-        if (this.checkBox) {
+        if (this.isCollisionToBox) {
             this.bounceOnBox(ctx.canvas.width, ctx.canvas.height);
         }
         this.update();
     }
 
-    setTarget(p: Point) {
+    public addForce(v: Vector) {
+        this.velocity.add(v);
+    }
+    public removeForce(v: Vector){
+        this.velocity.soustract(v);
+    }
+
+    public setTarget(p: Point): void {
         this.targetPos = p;
         this.isTargeting = true;
         let v: Vector = new Vector(this.targetPos.x - this.x, this.targetPos.y - this.y);
@@ -88,11 +123,13 @@ export class Point implements Drawable {
     private travel() {
         if (this.isTargeting) {
             let vec = new Vector(this.targetPos.x - this.x, this.targetPos.y - this.y);
-            if (vec.getLength() > this.moveSpeed) {
-                vec.setLength(this.moveSpeed);
-                this.translate(vec.x, vec.y);
+            let distance = vec.getLength();
+            if (distance > this.moveSpeed + this.size) {
+                vec.setLength(this.moveSpeed * distance / this.distanceTemp);
+                this.addForce(vec);
             } else {
                 this.isTargeting = false;
+                this.velocity.multiply(new Vector(0.2, 0.2))
             }
         }
     }
@@ -133,6 +170,10 @@ export class Point implements Drawable {
         var dx = p.x - this.x,
             dy = p.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public intersectToPoint(p: Point) {
+        return this.distanceTo(p) < this.size + p.size;
     }
 
     public signTo(p1: Point, p2: Point): number {
