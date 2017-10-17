@@ -33,16 +33,19 @@ export class Point implements Drawable {
             }
         }
     }
-    collisionToPoint(p: Point){
-        let lineIntersect = new Segment(this,p);
-        lineIntersect.setLength(this.size + p.size,true);
-        this.giveForce(p);
-    }
-    public giveForce(object: any): void {
-        if (object.dName === "Point") {
-            let RatioMasse: number = this.masse / object.masse;
 
-        }
+    collisionToPoint(p: Point) {
+        let normal = new Segment(this, p);
+        normal.setLength(this.size + p.size, true);
+        let newVectorThis: Vector = this.getCollisionForce(p);
+        let newVectorP: Vector = p.getCollisionForce(this);
+        newVectorThis.setAngle(this.velocity.getAngle() + normal.getAngle(false));
+        p.addForce(newVectorThis);
+    }
+
+    public getCollisionForce(p: Point): Vector {
+        let ratioMasse: number = this.bounce * this.masse / p.masse;
+        return new Vector(this.velocity.x * ratioMasse, this.velocity.y * ratioMasse)
     }
 
     private bounceOnBox(w: number, h: number) {
@@ -109,7 +112,8 @@ export class Point implements Drawable {
     public addForce(v: Vector) {
         this.velocity.add(v);
     }
-    public removeForce(v: Vector){
+
+    public removeForce(v: Vector) {
         this.velocity.soustract(v);
     }
 

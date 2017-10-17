@@ -53,19 +53,20 @@ export class Scene {
     public toggle() {
         this.isPlaying = !this.isPlaying;
     }
-    private update(): void{
-        if(this.isPlaying){
-            for (let d in this.drawList) {
+
+    private update(): void {
+        if (this.isPlaying) {
+            for (let d: number = 0; d < this.drawList.length; d++) {
                 let draw = this.drawList[d].item;
                 if (draw.isCollide) this.checkCollision(draw, d);
             }
         }
         requestAnimationFrame(this.update.bind(this));
     }
+
     private draw(): void {
         if (this.isPlaying) {
             if (this.clearFrame) this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
-            this.bufferDraws = [];
             for (let d in this.drawList) {
                 let draw = this.drawList[d].item;
                 this.context.save();
@@ -77,19 +78,20 @@ export class Scene {
         }
         requestAnimationFrame(this.draw.bind(this));
     }
-    private searchBufferDraws(a: any,b: any): boolean{
-        for(let i in this.bufferDraws){
-            if (this.bufferDraws[i] === a+"-"+b || this.bufferDraws[i] === b+"-"+a) return true;
+
+    private searchBufferDraws(a: any, b: any): boolean {
+        for (let i in this.bufferDraws) {
+            if (this.bufferDraws[i] === a + "-" + b || this.bufferDraws[i] === b + "-" + a) return true;
         }
         return false;
     }
-    private checkCollision(item: Drawable, i: any): void {
-        for (let d in this.drawList) {
+
+    private checkCollision(item: Drawable, i: number): void {
+        for (let d: number = i; d < this.drawList.length; d++) {
             let draw = this.drawList[d].item;
             // todo: optimise && !this.searchBufferDraws(i,d)
-            if (draw != item && draw.isCollide ) {
+            if (d !== i && draw.isCollide) {
                 item.collisionTo(draw);
-                this.bufferDraws.push(i+"-"+d);
             }
         }
     }

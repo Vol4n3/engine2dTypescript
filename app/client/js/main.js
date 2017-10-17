@@ -34,14 +34,16 @@ class Point {
         }
     }
     collisionToPoint(p) {
-        let lineIntersect = new Segment_1.Segment(this, p);
-        lineIntersect.setLength(this.size + p.size, true);
-        this.giveForce(p);
+        let normal = new Segment_1.Segment(this, p);
+        normal.setLength(this.size + p.size, true);
+        let newVectorThis = this.getCollisionForce(p);
+        let newVectorP = p.getCollisionForce(this);
+        newVectorThis.setAngle(this.velocity.getAngle() + normal.getAngle(false));
+        p.addForce(newVectorThis);
     }
-    giveForce(object) {
-        if (object.dName === "Point") {
-            let RatioMasse = this.masse / object.masse;
-        }
+    getCollisionForce(p) {
+        let ratioMasse = this.bounce * this.masse / p.masse;
+        return new Vector_1.Vector(this.velocity.x * ratioMasse, this.velocity.y * ratioMasse);
     }
     bounceOnBox(w, h) {
         this.groundForce = new Vector_1.Vector(0, 0);
@@ -222,7 +224,7 @@ class Scene {
     }
     update() {
         if (this.isPlaying) {
-            for (let d in this.drawList) {
+            for (let d = 0; d < this.drawList.length; d++) {
                 let draw = this.drawList[d].item;
                 if (draw.isCollide)
                     this.checkCollision(draw, d);
@@ -234,7 +236,6 @@ class Scene {
         if (this.isPlaying) {
             if (this.clearFrame)
                 this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
-            this.bufferDraws = [];
             for (let d in this.drawList) {
                 let draw = this.drawList[d].item;
                 this.context.save();
@@ -254,12 +255,11 @@ class Scene {
         return false;
     }
     checkCollision(item, i) {
-        for (let d in this.drawList) {
+        for (let d = i; d < this.drawList.length; d++) {
             let draw = this.drawList[d].item;
             // todo: optimise && !this.searchBufferDraws(i,d)
-            if (draw != item && draw.isCollide) {
+            if (d !== i && draw.isCollide) {
                 item.collisionTo(draw);
-                this.bufferDraws.push(i + "-" + d);
             }
         }
     }
@@ -466,9 +466,9 @@ player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
-player.masse = 0.1;
+player.masse = 1;
 player.color = "green";
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 1; i++) {
     let p = new Point_1.Point(200, 200);
     p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.8)';
     p.size = 20;

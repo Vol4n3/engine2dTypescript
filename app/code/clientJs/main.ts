@@ -10,9 +10,9 @@ player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
-player.masse = 0.1;
+player.masse = 1;
 player.color = "green"
-for(let i= 0; i< 10; i++){
+for(let i= 0; i< 1; i++){
     let p = new Point(200,200);
     p.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,0.8)';
     p.size = 20;
