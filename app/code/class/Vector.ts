@@ -46,7 +46,33 @@ export class Vector {
     getLength(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
+    public dot(v: Vector):number {
+        //Returns the scalar (dot) product of two vectors
+        return (this.x * v.getX() + this.y * v.getY());
 
+    }
+    public scalar( scalar: number): Vector{
+
+        let x:number = this.x * scalar;
+        let y:number = this.y * scalar;
+
+        return new Vector(x,y);
+    }
+    public compareAngle(v: Vector): number {
+        //Returns the angle between the vectors
+        let cosa:number = this.dot(v) / (this.getLength() * v.getLength());
+
+        //In case of infinity (undefined)
+        if (cosa > 1.0)
+        cosa = 1.0;
+        else if(cosa < -1.0)
+        cosa = -1.0;
+        else if (isNaN(cosa))
+        return 0;
+
+        return (Math.acos(cosa));
+
+    }
     setLength(length: number): Vector {
         var angle = this.getAngle();
         this.x = Math.cos(angle) * length;

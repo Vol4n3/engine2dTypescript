@@ -20,7 +20,7 @@ class Point {
         this.isGround = false;
         this.forcesList = [];
         this.moveSpeed = 0;
-        this.bounce = 0.90;
+        this.bounce = 0.99;
         this.masse = 1;
         this.isTargeting = false;
         this.distanceTemp = 0;
@@ -34,6 +34,22 @@ class Point {
         }
     }
     collisionToPoint(p) {
+        let v1 = new Vector_1.Vector(p.x - this.x, p.y - this.y); //Direction of contact
+        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.compareAngle(v1)));
+        let v2 = new Vector_1.Vector(this.x - p.x, this.x - p.x); //Reverse of v1
+        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.compareAngle(v2)));
+        let rapportMasse = this.masse / p.masse;
+        this.addForce(v2.scalar(1 * p.masse / this.masse * this.bounce));
+        p.addForce(v1.scalar(1 * this.masse / p.masse * p.bounce));
+        this.addForce(v1.scalar(-1 * p.masse / this.masse * p.bounce));
+        p.addForce(v2.scalar(-1 * this.masse / p.masse * this.bounce));
+        let normal = new Segment_1.Segment(this, p);
+        normal.setLength(this.size + p.size, true);
+    }
+    getKineticEnergy() {
+        return 0.5 * this.masse * (this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+    }
+    collisionToPointOld(p) {
         let normal = new Segment_1.Segment(this, p);
         normal.setLength(this.size + p.size, true);
         let newVectorThis = this.getCollisionForce(p);
@@ -416,6 +432,27 @@ class Vector {
     getLength() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
+    dot(v) {
+        //Returns the scalar (dot) product of two vectors
+        return (this.x * v.getX() + this.y * v.getY());
+    }
+    scalar(scalar) {
+        let x = this.x * scalar;
+        let y = this.y * scalar;
+        return new Vector(x, y);
+    }
+    compareAngle(v) {
+        //Returns the angle between the vectors
+        let cosa = this.dot(v) / (this.getLength() * v.getLength());
+        //In case of infinity (undefined)
+        if (cosa > 1.0)
+            cosa = 1.0;
+        else if (cosa < -1.0)
+            cosa = -1.0;
+        else if (isNaN(cosa))
+            return 0;
+        return (Math.acos(cosa));
+    }
     setLength(length) {
         var angle = this.getAngle();
         this.x = Math.cos(angle) * length;
@@ -466,9 +503,9 @@ player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
-player.masse = 1;
+player.masse = 0.3;
 player.color = "green";
-for (let i = 0; i < 1; i++) {
+for (let i = 0; i < 10; i++) {
     let p = new Point_1.Point(200, 200);
     p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.8)';
     p.size = 20;
@@ -477,7 +514,7 @@ for (let i = 0; i < 1; i++) {
     p.gravity.setY(0);
     p.isCollide = true;
     scene.add(p);
-    p.setTarget(new Point_1.Point(500, 500));
+    //p.setTarget(new Point(500,500));
     p.moveSpeed = 0.5;
 }
 window.addEventListener('mousemove', (ev) => {

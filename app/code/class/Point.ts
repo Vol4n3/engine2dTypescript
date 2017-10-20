@@ -16,7 +16,7 @@ export class Point implements Drawable {
     public isGround: boolean = false;
     public forcesList: Vector[] = [];
     public moveSpeed: number = 0;
-    public bounce: number = 0.90;
+    public bounce: number = 0.99;
     public masse: number = 1;
     private isTargeting: boolean = false;
     private distanceTemp: number = 0;
@@ -33,8 +33,29 @@ export class Point implements Drawable {
             }
         }
     }
+    //https://github.com/tanx8/Billards/blob/master/src/com/shaw/pool/CollisionPhysics.java
 
-    collisionToPoint(p: Point) {
+    public collisionToPoint(p :Point): void {
+
+        let v1: Vector = new Vector(p.x - this.x, p.y - this.y);
+        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.compareAngle(v1)));
+
+        let v2: Vector = new Vector(this.x - p.x,this.x - p.x);
+        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.compareAngle(v2)));
+
+        this.addForce(v2.scalar(1 * p.masse/this.masse * this.bounce));
+        p.addForce(v1.scalar(1 * this.masse/p.masse * p.bounce));
+
+        this.addForce(v1.scalar(-1 * p.masse/this.masse * p.bounce));
+        p.addForce(v2.scalar(-1 * this.masse/p.masse * this.bounce));
+
+        let normal = new Segment(this, p);
+        normal.setLength(this.size + p.size, true);
+    }
+    public getKineticEnergy(): number {
+        return 0.5 * this.masse * (this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+    }
+    collisionToPointOld(p: Point) {
         let normal = new Segment(this, p);
         normal.setLength(this.size + p.size, true);
         let newVectorThis: Vector = this.getCollisionForce(p);
