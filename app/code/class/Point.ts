@@ -1,8 +1,8 @@
-import {Drawable} from "./interfaces";
+import {IDrawable} from "./interfaces";
 import {Vector} from "./Vector";
 import {Segment} from "./Segment";
 
-export class Point implements Drawable {
+export class Point implements IDrawable {
     public dName: string = "Point";
     public isCollide: boolean = false;
     public targetPos: Point;
@@ -11,7 +11,7 @@ export class Point implements Drawable {
     public velocity: Vector = new Vector();
     public force: Vector = new Vector();
     public gravity: Vector = new Vector();
-    public isCollisionToBox: boolean = true;
+    public isCollisionToBox: boolean = false;
     public groundBounce: number = -0.85;
     public friction: Vector = new Vector(0.992, 0.992);
     public isGround: boolean = false;
@@ -26,7 +26,7 @@ export class Point implements Drawable {
 
     }
 
-    collisionTo(object: Drawable): void {
+    collisionTo(object: IDrawable): void {
         if (object.dName === "Point") {
             if (this.intersectToPoint(<Point>object)) {
                 this.collisionToPoint(<Point>object);
@@ -156,12 +156,12 @@ export class Point implements Drawable {
         if (this.isTargeting) {
             let vec = new Vector(this.targetPos.x - this.x, this.targetPos.y - this.y);
             let distance = vec.getLength();
-            if (distance > this.moveSpeed + this.size) {
+            if (distance >= this.moveSpeed + this.size) {
                 vec.setLength(this.moveSpeed * distance / this.distanceTemp);
                 this.addForce(vec);
             } else {
                 this.isTargeting = false;
-                this.velocity.multiply(new Vector(0.2, 0.2))
+                this.velocity.multiply(new Vector(0, 0));
             }
         }
     }
@@ -199,7 +199,7 @@ export class Point implements Drawable {
     }
 
     public distanceTo(p: Point): number {
-        var dx = p.x - this.x,
+        let dx = p.x - this.x,
             dy = p.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
@@ -225,5 +225,4 @@ export class Point implements Drawable {
         }
         return ((b1 == b2) && (b2 == b3));
     }
-
 }

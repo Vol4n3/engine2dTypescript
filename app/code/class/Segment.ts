@@ -1,7 +1,7 @@
 import {Point} from "./Point";
-import {Drawable} from "./interfaces";
+import {IDrawable} from "./interfaces";
 
-export class Segment implements Drawable {
+export class Segment implements IDrawable {
     isCollide: boolean;
     dName: string = "Segment";
     public color: string = "red";
@@ -19,7 +19,7 @@ export class Segment implements Drawable {
         }*/
     }
 
-    collisionTo(object: Drawable): void {
+    collisionTo(object: IDrawable): void {
         throw new Error("Method not implemented.");
     }
 
@@ -40,7 +40,7 @@ export class Segment implements Drawable {
 
     intersectionToSegment(segment: Segment): Point | boolean {
         if (segment && segment.dName == "Segment") {
-            var A1 = this.p2.y - this.p1.y,
+            let A1 = this.p2.y - this.p1.y,
                 B1 = this.p1.x - this.p2.x,
                 C1 = A1 * this.p1.x + B1 * this.p1.y,
                 A2 = segment.p2.y - segment.p1.y,
@@ -49,7 +49,7 @@ export class Segment implements Drawable {
                 denominator = A1 * B2 - A2 * B1;
 
             if (denominator != 0) {
-                var x = (B2 * C1 - B1 * C2) / denominator,
+                let x = (B2 * C1 - B1 * C2) / denominator,
                     y = (A1 * C2 - A2 * C1) / denominator,
                     rx0 = (x - this.p1.x) / (this.p2.x - this.p1.x),
                     ry0 = (y - this.p1.y) / (this.p2.y - this.p1.y),
@@ -70,7 +70,7 @@ export class Segment implements Drawable {
 
     intersectLineTo(segment: Segment): Point | boolean {
         if (segment && segment.dName == "Segment") {
-            var A1 = this.p2.y - this.p1.y,
+            let A1 = this.p2.y - this.p1.y,
                 B1 = this.p1.x - this.p2.x,
                 C1 = A1 * this.p1.x + B1 * this.p1.y,
                 A2 = segment.p2.y - segment.p1.y,
@@ -78,8 +78,8 @@ export class Segment implements Drawable {
                 C2 = A2 * segment.p1.x + B2 * segment.p1.y,
                 denominator = A1 * B2 - A2 * B1;
             if (denominator != 0) {
-                var x = (B2 * C1 - B1 * C2) / denominator;
-                var y = (A1 * C2 - A2 * C1) / denominator;
+                let x = (B2 * C1 - B1 * C2) / denominator;
+                let y = (A1 * C2 - A2 * C1) / denominator;
                 return new Point(x, y);
             } else {
                 return false;

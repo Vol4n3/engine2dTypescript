@@ -1,9 +1,9 @@
 'use strict';
 
 // simple express server
-var express = require('express');
-var app = express();
-var router = express.Router();
+let express = require('express');
+let app = express();
+let router = express.Router();
 
 app.use(express.static('app/client'));
 app.get('/', function(req, res) {
