@@ -10,19 +10,26 @@ player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
-player.masse = 0.3;
-player.color = "green"
-for(let i= 0; i< 10; i++){
-    let p = new Point(200,200);
-    p.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,0.8)';
+player.masse = 1;
+player.color = "green";
+let lastPoint:Point ;
+for(let i= 0; i< 20; i++){
+    let p = new Point(Math.random()*scene.getWidth(),Math.random()*scene.getHeight());
+    p.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,1)';
     p.size = 20;
-    //p.velocity.setX(Math.random()*20-10);
-    p.velocity.setY(Math.random()*20-10)
-    p.gravity.setY(0);
+    p.velocity.setX(100);
+    p.gravity.setY(1);
+    //p.gravity.setX(0.1);
     p.isCollide = true;
     scene.add(p);
-    //p.setTarget(new Point(500,500));
-    p.moveSpeed = 0.5;
+    /*
+    if(lastPoint){
+        let s = new Segment(lastPoint,p);
+        s.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,1)';
+        scene.add(s);
+    }
+        lastPoint = p;
+        */
 }
 window.addEventListener('mousemove',(ev)=>{
     player.setTarget(new Point(ev.clientX,ev.clientY));

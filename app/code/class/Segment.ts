@@ -5,7 +5,7 @@ export class Segment implements Drawable {
     isCollide: boolean;
     dName: string = "Segment";
     public color: string = "red";
-    public width: number = 3;
+    public width: number = 5;
 
     constructor(public p1: Point, public p2: Point) {
 
@@ -31,6 +31,7 @@ export class Segment implements Drawable {
     public draw(ctx: CanvasRenderingContext2D): void {
         ctx.moveTo(this.p1.x, this.p1.y);
         ctx.lineTo(this.p2.x, this.p2.y);
+        ctx.lineCap = "round";
         ctx.strokeStyle = this.color;
         ctx.lineWidth = this.width;
         ctx.stroke();

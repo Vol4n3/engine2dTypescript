@@ -36,7 +36,7 @@ export class Vector {
     }
 
     setAngle(angle: number): Vector {
-        var length = this.getLength();
+        let length = this.getLength();
         this.x = Math.cos(angle) * length;
         this.y = Math.sin(angle) * length;
         this.update();
@@ -58,7 +58,7 @@ export class Vector {
 
         return new Vector(x,y);
     }
-    public compareAngle(v: Vector): number {
+    public getCorner(v: Vector): number {
         //Returns the angle between the vectors
         let cosa:number = this.dot(v) / (this.getLength() * v.getLength());
 
@@ -74,7 +74,7 @@ export class Vector {
 
     }
     setLength(length: number): Vector {
-        var angle = this.getAngle();
+        let angle = this.getAngle();
         this.x = Math.cos(angle) * length;
         this.y = Math.sin(angle) * length;
         this.update();

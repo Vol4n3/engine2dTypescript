@@ -13,14 +13,14 @@ class Point {
         this.size = 10;
         this.color = "red";
         this.velocity = new Vector_1.Vector();
+        this.force = new Vector_1.Vector();
         this.gravity = new Vector_1.Vector();
         this.isCollisionToBox = true;
         this.groundBounce = -0.85;
-        this.friction = new Vector_1.Vector(0.95, 0.95);
+        this.friction = new Vector_1.Vector(0.992, 0.992);
         this.isGround = false;
-        this.forcesList = [];
         this.moveSpeed = 0;
-        this.bounce = 0.99;
+        this.bounce = 0.85;
         this.masse = 1;
         this.isTargeting = false;
         this.distanceTemp = 0;
@@ -33,29 +33,21 @@ class Point {
             }
         }
     }
+    //https://github.com/tanx8/Billards/blob/master/src/com/shaw/pool/CollisionPhysics.java
     collisionToPoint(p) {
-        let v1 = new Vector_1.Vector(p.x - this.x, p.y - this.y); //Direction of contact
-        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.compareAngle(v1)));
-        let v2 = new Vector_1.Vector(this.x - p.x, this.x - p.x); //Reverse of v1
-        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.compareAngle(v2)));
-        let rapportMasse = this.masse / p.masse;
-        this.addForce(v2.scalar(1 * p.masse / this.masse * this.bounce));
-        p.addForce(v1.scalar(1 * this.masse / p.masse * p.bounce));
-        this.addForce(v1.scalar(-1 * p.masse / this.masse * p.bounce));
-        p.addForce(v2.scalar(-1 * this.masse / p.masse * this.bounce));
         let normal = new Segment_1.Segment(this, p);
         normal.setLength(this.size + p.size, true);
+        let v1 = new Vector_1.Vector(p.x - this.x, p.y - this.y);
+        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.getCorner(v1)));
+        let v2 = new Vector_1.Vector(this.x - p.x, this.x - p.x);
+        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.getCorner(v2)));
+        this.addForce(v2.scalar(p.masse / this.masse * this.bounce));
+        p.addForce(v1.scalar(this.masse / p.masse * p.bounce));
+        this.addForce(v1.scalar(-1 * p.masse / this.masse * p.bounce));
+        p.addForce(v2.scalar(-1 * this.masse / p.masse * this.bounce));
     }
     getKineticEnergy() {
         return 0.5 * this.masse * (this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-    }
-    collisionToPointOld(p) {
-        let normal = new Segment_1.Segment(this, p);
-        normal.setLength(this.size + p.size, true);
-        let newVectorThis = this.getCollisionForce(p);
-        let newVectorP = p.getCollisionForce(this);
-        newVectorThis.setAngle(this.velocity.getAngle() + normal.getAngle(false));
-        p.addForce(newVectorThis);
     }
     getCollisionForce(p) {
         let ratioMasse = this.bounce * this.masse / p.masse;
@@ -71,27 +63,41 @@ class Point {
             this.x = w - this.size + this.gravity.getX();
             this.velocity.setX(this.velocity.getX() * this.groundBounce);
             this.groundForce.setX(-this.gravity.getX());
+            if (this.force.x > 0) {
+                this.groundForce.add(new Vector_1.Vector(-this.force.x, 0));
+            }
         }
         if (posXmin < 0) {
             this.x = this.size + this.gravity.getX();
             this.velocity.setX(this.velocity.getX() * this.groundBounce);
             this.groundForce.setX(-this.gravity.getX());
+            if (this.force.x < 0) {
+                this.groundForce.add(new Vector_1.Vector(-this.force.x, 0));
+            }
         }
         if (posYmax > h) {
             this.y = h - this.size + this.gravity.getY();
             this.velocity.setY(this.velocity.getY() * this.groundBounce);
             this.groundForce.setY(-this.gravity.getY());
+            if (this.force.y > 0) {
+                this.groundForce.add(new Vector_1.Vector(0, -this.force.y));
+            }
         }
         if (posYmin < 0) {
             this.y = this.size + this.gravity.getY();
             this.velocity.setY(this.velocity.getY() * this.groundBounce);
             this.groundForce.setY(-this.gravity.getY());
+            if (this.force.y < 0) {
+                this.groundForce.add(new Vector_1.Vector(0, -this.force.y));
+            }
         }
     }
     update() {
-        this.addForce(this.gravity);
-        this.addForce(this.groundForce);
+        this.velocity.add(this.gravity);
+        this.velocity.add(this.force);
+        this.velocity.add(this.groundForce);
         this.velocity.multiply(this.friction);
+        this.force = new Vector_1.Vector();
         this.travel();
         this.translate(this.velocity.x, this.velocity.y);
     }
@@ -116,7 +122,7 @@ class Point {
         this.update();
     }
     addForce(v) {
-        this.velocity.add(v);
+        this.force.add(v);
     }
     removeForce(v) {
         this.velocity.soustract(v);
@@ -213,7 +219,6 @@ class Scene {
         this.scene.appendChild(this.canvas);
         this.resume();
         requestAnimationFrame(this.draw.bind(this));
-        requestAnimationFrame(this.update.bind(this));
     }
     add(item, id) {
         this.drawList.push({
@@ -238,27 +243,19 @@ class Scene {
     toggle() {
         this.isPlaying = !this.isPlaying;
     }
-    update() {
-        if (this.isPlaying) {
-            for (let d = 0; d < this.drawList.length; d++) {
-                let draw = this.drawList[d].item;
-                if (draw.isCollide)
-                    this.checkCollision(draw, d);
-            }
-        }
-        requestAnimationFrame(this.update.bind(this));
-    }
     draw() {
         if (this.isPlaying) {
             if (this.clearFrame)
                 this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
-            for (let d in this.drawList) {
+            for (let d = 0; d < this.drawList.length; d++) {
                 let draw = this.drawList[d].item;
                 this.context.save();
                 this.context.beginPath();
                 draw.draw(this.context);
                 this.context.closePath();
                 this.context.restore();
+                if (draw.isCollide)
+                    this.checkCollision(draw, d);
             }
         }
         requestAnimationFrame(this.draw.bind(this));
@@ -273,7 +270,6 @@ class Scene {
     checkCollision(item, i) {
         for (let d = i; d < this.drawList.length; d++) {
             let draw = this.drawList[d].item;
-            // todo: optimise && !this.searchBufferDraws(i,d)
             if (d !== i && draw.isCollide) {
                 item.collisionTo(draw);
             }
@@ -302,7 +298,7 @@ class Segment {
         this.p2 = p2;
         this.dName = "Segment";
         this.color = "red";
-        this.width = 3;
+        this.width = 5;
     }
     //todo make a good checkdraw
     checkDraw() {
@@ -321,6 +317,7 @@ class Segment {
     draw(ctx) {
         ctx.moveTo(this.p1.x, this.p1.y);
         ctx.lineTo(this.p2.x, this.p2.y);
+        ctx.lineCap = "round";
         ctx.strokeStyle = this.color;
         ctx.lineWidth = this.width;
         ctx.stroke();
@@ -423,7 +420,7 @@ class Vector {
         return Math.atan2(this.y, this.x);
     }
     setAngle(angle) {
-        var length = this.getLength();
+        let length = this.getLength();
         this.x = Math.cos(angle) * length;
         this.y = Math.sin(angle) * length;
         this.update();
@@ -441,7 +438,7 @@ class Vector {
         let y = this.y * scalar;
         return new Vector(x, y);
     }
-    compareAngle(v) {
+    getCorner(v) {
         //Returns the angle between the vectors
         let cosa = this.dot(v) / (this.getLength() * v.getLength());
         //In case of infinity (undefined)
@@ -454,7 +451,7 @@ class Vector {
         return (Math.acos(cosa));
     }
     setLength(length) {
-        var angle = this.getAngle();
+        let angle = this.getAngle();
         this.x = Math.cos(angle) * length;
         this.y = Math.sin(angle) * length;
         this.update();
@@ -503,19 +500,26 @@ player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
-player.masse = 0.3;
+player.masse = 1;
 player.color = "green";
-for (let i = 0; i < 10; i++) {
-    let p = new Point_1.Point(200, 200);
-    p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.8)';
+let lastPoint;
+for (let i = 0; i < 20; i++) {
+    let p = new Point_1.Point(Math.random() * scene.getWidth(), Math.random() * scene.getHeight());
+    p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,1)';
     p.size = 20;
-    //p.velocity.setX(Math.random()*20-10);
-    p.velocity.setY(Math.random() * 20 - 10);
-    p.gravity.setY(0);
+    p.velocity.setX(100);
+    p.gravity.setY(1);
+    //p.gravity.setX(0.1);
     p.isCollide = true;
     scene.add(p);
-    //p.setTarget(new Point(500,500));
-    p.moveSpeed = 0.5;
+    /*
+    if(lastPoint){
+        let s = new Segment(lastPoint,p);
+        s.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,1)';
+        scene.add(s);
+    }
+        lastPoint = p;
+        */
 }
 window.addEventListener('mousemove', (ev) => {
     player.setTarget(new Point_1.Point(ev.clientX, ev.clientY));

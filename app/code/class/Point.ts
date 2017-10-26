@@ -9,14 +9,14 @@ export class Point implements Drawable {
     public size: number = 10;
     public color: string = "red";
     public velocity: Vector = new Vector();
+    public force: Vector = new Vector();
     public gravity: Vector = new Vector();
     public isCollisionToBox: boolean = true;
     public groundBounce: number = -0.85;
-    public friction: Vector = new Vector(0.95, 0.95);
+    public friction: Vector = new Vector(0.992, 0.992);
     public isGround: boolean = false;
-    public forcesList: Vector[] = [];
     public moveSpeed: number = 0;
-    public bounce: number = 0.99;
+    public bounce: number = 0.85;
     public masse: number = 1;
     private isTargeting: boolean = false;
     private distanceTemp: number = 0;
@@ -37,31 +37,24 @@ export class Point implements Drawable {
 
     public collisionToPoint(p :Point): void {
 
+        let normal = new Segment(this, p);
+        normal.setLength(this.size + p.size, true);
+
         let v1: Vector = new Vector(p.x - this.x, p.y - this.y);
-        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.compareAngle(v1)));
+        v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.getCorner(v1)));
 
         let v2: Vector = new Vector(this.x - p.x,this.x - p.x);
-        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.compareAngle(v2)));
+        v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.getCorner(v2)));
 
-        this.addForce(v2.scalar(1 * p.masse/this.masse * this.bounce));
-        p.addForce(v1.scalar(1 * this.masse/p.masse * p.bounce));
+        this.addForce(v2.scalar(p.masse/this.masse * this.bounce));
+        p.addForce(v1.scalar(this.masse/p.masse * p.bounce));
 
         this.addForce(v1.scalar(-1 * p.masse/this.masse * p.bounce));
         p.addForce(v2.scalar(-1 * this.masse/p.masse * this.bounce));
 
-        let normal = new Segment(this, p);
-        normal.setLength(this.size + p.size, true);
     }
     public getKineticEnergy(): number {
         return 0.5 * this.masse * (this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-    }
-    collisionToPointOld(p: Point) {
-        let normal = new Segment(this, p);
-        normal.setLength(this.size + p.size, true);
-        let newVectorThis: Vector = this.getCollisionForce(p);
-        let newVectorP: Vector = p.getCollisionForce(this);
-        newVectorThis.setAngle(this.velocity.getAngle() + normal.getAngle(false));
-        p.addForce(newVectorThis);
     }
 
     public getCollisionForce(p: Point): Vector {
@@ -82,28 +75,42 @@ export class Point implements Drawable {
             this.x = w - this.size + this.gravity.getX();
             this.velocity.setX(this.velocity.getX() * this.groundBounce);
             this.groundForce.setX(-this.gravity.getX());
+            if(this.force.x > 0){
+                this.groundForce.add(new Vector(-this.force.x,0));
+            }
         }
         if (posXmin < 0) {
             this.x = this.size + this.gravity.getX();
             this.velocity.setX(this.velocity.getX() * this.groundBounce);
             this.groundForce.setX(-this.gravity.getX());
+            if(this.force.x < 0){
+                this.groundForce.add(new Vector(-this.force.x,0));
+            }
         }
         if (posYmax > h) {
             this.y = h - this.size + this.gravity.getY();
             this.velocity.setY(this.velocity.getY() * this.groundBounce);
             this.groundForce.setY(-this.gravity.getY());
+            if(this.force.y > 0){
+                this.groundForce.add(new Vector(0,-this.force.y));
+            }
         }
         if (posYmin < 0) {
             this.y = this.size + this.gravity.getY();
             this.velocity.setY(this.velocity.getY() * this.groundBounce);
             this.groundForce.setY(-this.gravity.getY());
+            if(this.force.y < 0){
+                this.groundForce.add(new Vector(0,-this.force.y));
+            }
         }
     }
 
     public update(): void {
-        this.addForce(this.gravity);
-        this.addForce(this.groundForce);
+        this.velocity.add(this.gravity);
+        this.velocity.add(this.force);
+        this.velocity.add(this.groundForce);
         this.velocity.multiply(this.friction);
+        this.force = new Vector();
         this.travel();
         this.translate(this.velocity.x, this.velocity.y);
     }
@@ -131,7 +138,7 @@ export class Point implements Drawable {
     }
 
     public addForce(v: Vector) {
-        this.velocity.add(v);
+        this.force.add(v);
     }
 
     public removeForce(v: Vector) {
