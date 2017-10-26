@@ -1,8 +1,8 @@
-import {Drawable} from "./interfaces";
+import {IDrawable} from "./interfaces";
 import {Vector} from "./Vector";
 import {Segment} from "./Segment";
 
-export class Point implements Drawable {
+export class Point implements IDrawable {
     public dName: string = "Point";
     public isCollide: boolean = false;
     public targetPos: Point;
@@ -10,7 +10,7 @@ export class Point implements Drawable {
     public color: string = "red";
     public velocity: Vector = new Vector();
     public gravity: Vector = new Vector();
-    public isCollisionToBox: boolean = true;
+    public isCollisionToBox: boolean = false;
     public groundBounce: number = -0.85;
     public friction: Vector = new Vector(0.95, 0.95);
     public isGround: boolean = false;
@@ -26,7 +26,7 @@ export class Point implements Drawable {
 
     }
 
-    collisionTo(object: Drawable): void {
+    collisionTo(object: IDrawable): void {
         if (object.dName === "Point") {
             if (this.intersectToPoint(<Point>object)) {
                 this.collisionToPoint(<Point>object);

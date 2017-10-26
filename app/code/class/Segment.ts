@@ -1,7 +1,7 @@
 import {Point} from "./Point";
-import {Drawable} from "./interfaces";
+import {IDrawable} from "./interfaces";
 
-export class Segment implements Drawable {
+export class Segment implements IDrawable {
     isCollide: boolean;
     dName: string = "Segment";
     public color: string = "red";
@@ -19,7 +19,7 @@ export class Segment implements Drawable {
         }*/
     }
 
-    collisionTo(object: Drawable): void {
+    collisionTo(object: IDrawable): void {
         throw new Error("Method not implemented.");
     }
 

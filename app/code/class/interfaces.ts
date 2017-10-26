@@ -1,11 +1,11 @@
-export interface Drawable {
+export interface IDrawable {
     isCollide: boolean;
     dName : string;
     draw(ctx: CanvasRenderingContext2D): void;
-    collisionTo(object: Drawable): void;
+    collisionTo(object: IDrawable): void;
 }
 
-export interface DrawList {
-    item: Drawable;
+export interface IDrawList {
+    item: IDrawable;
     id: string;
 }

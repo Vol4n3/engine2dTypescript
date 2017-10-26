@@ -1,4 +1,4 @@
-import {Drawable, DrawList} from "./interfaces";
+import {IDrawable, IDrawList} from "./interfaces";
 
 export class Scene {
 
@@ -6,7 +6,7 @@ export class Scene {
     public canvas: HTMLCanvasElement;
     public context: CanvasRenderingContext2D;
     public clearFrame: boolean = true;
-    private drawList: DrawList[] = [];
+    private drawList: IDrawList[] = [];
     private isPlaying: boolean;
     private bufferDraws: string[] = [];
 
@@ -26,7 +26,7 @@ export class Scene {
         requestAnimationFrame(this.update.bind(this));
     }
 
-    public add(item: Drawable, id?: string) {
+    public add(item: IDrawable, id?: string) {
         this.drawList.push({
             item: item,
             id: id
@@ -86,7 +86,7 @@ export class Scene {
         return false;
     }
 
-    private checkCollision(item: Drawable, i: number): void {
+    private checkCollision(item: IDrawable, i: number): void {
         for (let d: number = i; d < this.drawList.length; d++) {
             let draw = this.drawList[d].item;
             // todo: optimise && !this.searchBufferDraws(i,d)

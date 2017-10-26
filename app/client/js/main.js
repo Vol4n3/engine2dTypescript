@@ -1,6 +1,43 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const rectangle_1 = require("./rectangle");
+class DomElement extends rectangle_1.Rectangle {
+    constructor(element) {
+        let rect = element.getBoundingClientRect();
+        super(rect.left, rect.top, rect.width, rect.height);
+        this.element = element;
+    }
+    draw(ctx) {
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.stroke();
+        switch (this.pointMoving) {
+            case "center":
+                this.update(true);
+                break;
+            case "bound":
+                this.update(false);
+                break;
+            default:
+                this.init();
+                break;
+        }
+        this.updateHTML();
+    }
+    updateHTML() {
+        if (this.element) {
+            this.element.style.left = this.x + 'px';
+            this.element.style.width = this.width + 'px';
+            this.element.style.top = this.y + 'px';
+            this.element.style.height = this.height + 'px';
+        }
+    }
+}
+exports.DomElement = DomElement;
+
+},{"./rectangle":6}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const Vector_1 = require("./Vector");
 const Segment_1 = require("./Segment");
 class Point {
@@ -14,7 +51,7 @@ class Point {
         this.color = "red";
         this.velocity = new Vector_1.Vector();
         this.gravity = new Vector_1.Vector();
-        this.isCollisionToBox = true;
+        this.isCollisionToBox = false;
         this.groundBounce = -0.85;
         this.friction = new Vector_1.Vector(0.95, 0.95);
         this.isGround = false;
@@ -33,12 +70,12 @@ class Point {
             }
         }
     }
+    //https://github.com/tanx8/Billards/blob/master/src/com/shaw/pool/CollisionPhysics.java
     collisionToPoint(p) {
-        let v1 = new Vector_1.Vector(p.x - this.x, p.y - this.y); //Direction of contact
+        let v1 = new Vector_1.Vector(p.x - this.x, p.y - this.y);
         v1.setLength(this.velocity.getLength() * Math.cos(this.velocity.compareAngle(v1)));
-        let v2 = new Vector_1.Vector(this.x - p.x, this.x - p.x); //Reverse of v1
+        let v2 = new Vector_1.Vector(this.x - p.x, this.x - p.x);
         v2.setLength(p.velocity.getLength() * Math.cos(p.velocity.compareAngle(v2)));
-        let rapportMasse = this.masse / p.masse;
         this.addForce(v2.scalar(1 * p.masse / this.masse * this.bounce));
         p.addForce(v1.scalar(1 * this.masse / p.masse * p.bounce));
         this.addForce(v1.scalar(-1 * p.masse / this.masse * p.bounce));
@@ -194,7 +231,7 @@ class Point {
 }
 exports.Point = Point;
 
-},{"./Segment":3,"./Vector":4}],2:[function(require,module,exports){
+},{"./Segment":4,"./Vector":5}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Scene {
@@ -292,7 +329,7 @@ class Scene {
 }
 exports.Scene = Scene;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Point_1 = require("./Point");
@@ -390,7 +427,7 @@ class Segment {
 }
 exports.Segment = Segment;
 
-},{"./Point":1}],4:[function(require,module,exports){
+},{"./Point":2}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Vector {
@@ -491,34 +528,151 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Point_1 = require("./Point");
+class Rectangle {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.dName = "Rectangle";
+        this.centerPoint = new Point_1.Point();
+        this.originPoint = new Point_1.Point();
+        this.sizePoint = new Point_1.Point();
+        this.pointMoving = "center";
+        this.init();
+    }
+    init() {
+        this.initCenterPoint();
+        this.initBound();
+    }
+    initBound() {
+        this.initOriginPoint();
+        this.initSizePoint();
+    }
+    update(center) {
+        if (center) {
+            this.x = this.centerPoint.x - this.width * 0.5;
+            this.y = this.centerPoint.y - this.height * 0.5;
+            this.initBound();
+        }
+        else {
+            this.x = this.originPoint.x;
+            this.y = this.originPoint.y;
+            this.width = this.sizePoint.x;
+            this.height = this.sizePoint.y;
+            this.initCenterPoint();
+        }
+    }
+    draw(ctx) {
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.stroke();
+        switch (this.pointMoving) {
+            case "center":
+                this.update(true);
+                break;
+            case "bound":
+                this.update(false);
+                break;
+            default:
+                this.init();
+                break;
+        }
+    }
+    initOriginPoint() {
+        this.originPoint.x = this.x;
+        this.originPoint.y = this.y;
+    }
+    initSizePoint() {
+        this.sizePoint.x = this.width;
+        this.sizePoint.y = this.height;
+    }
+    initCenterPoint() {
+        this.centerPoint.x = (this.x * 2 + this.width) * 0.5;
+        this.centerPoint.y = (this.y * 2 + this.height) * 0.5;
+    }
+    setCenterPoint(p) {
+        this.centerPoint.x = p.x;
+        this.centerPoint.y = p.y;
+        this.x = p.x - this.width * 0.5;
+        this.y = p.y - this.height * 0.5;
+        return this;
+    }
+    getCenterPoint() {
+        return this.centerPoint;
+    }
+    setX(x) {
+        this.x = x;
+        this.init();
+        return this;
+    }
+    setWidth(width) {
+        this.width = width;
+        this.init();
+        return this;
+    }
+    setY(y) {
+        this.y = y;
+        this.init();
+        return this;
+    }
+    setHeight(height) {
+        this.height = height;
+        this.init();
+        return this;
+    }
+    collisionTo(object) {
+    }
+}
+exports.Rectangle = Rectangle;
+
+},{"./Point":2}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 ///<reference path="../../../typings/globals/three/index.d.ts"/>
 const Scene_1 = require("../class/Scene");
 const Point_1 = require("../class/Point");
+const DomElement_1 = require("../class/DomElement");
 let scene = new Scene_1.Scene('scene');
-let player = new Point_1.Point();
+/*
+let player = new Point();
 player.size = 20;
 player.isCollide = true;
 scene.add(player);
 player.moveSpeed = 1;
 player.masse = 0.3;
 player.color = "green";
-for (let i = 0; i < 10; i++) {
-    let p = new Point_1.Point(200, 200);
-    p.color = 'hsla(' + Math.round(Math.random() * 360) + ',50%,60%,0.8)';
+
+for(let i= 0; i< 10; i++){
+    let p = new Point(200,200);
+    p.color = 'hsla('+Math.round(Math.random()*360)+',50%,60%,0.8)';
     p.size = 20;
     //p.velocity.setX(Math.random()*20-10);
-    p.velocity.setY(Math.random() * 20 - 10);
+    p.velocity.setY(Math.random()*20-10)
     p.gravity.setY(0);
     p.isCollide = true;
     scene.add(p);
     //p.setTarget(new Point(500,500));
     p.moveSpeed = 0.5;
 }
-window.addEventListener('mousemove', (ev) => {
-    player.setTarget(new Point_1.Point(ev.clientX, ev.clientY));
+window.addEventListener('mousemove',(ev)=>{
+    player.setTarget(new Point(ev.clientX,ev.clientY));
 });
+*/
+let rect = new DomElement_1.DomElement(document.getElementById('element'));
+console.log(rect);
+scene.add(rect);
+scene.add(rect.centerPoint);
+scene.add(rect.sizePoint);
+rect.sizePoint.velocity.setX(20);
+rect.pointMoving = "bound";
+setTimeout(() => {
+    rect.sizePoint.moveSpeed = 0.2;
+    rect.sizePoint.setTarget(new Point_1.Point(200, 200));
+    console.log(rect);
+}, 2000);
 
-},{"../class/Point":1,"../class/Scene":2}]},{},[5]);
+},{"../class/DomElement":1,"../class/Point":2,"../class/Scene":3}]},{},[7]);
