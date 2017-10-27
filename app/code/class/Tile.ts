@@ -1,4 +1,4 @@
-import {Rectangle} from "./rectangle";
+import {Rectangle} from "./geometry/rectangle";
 
 export class Tile extends Rectangle {
     constructor() {

@@ -1,5 +1,5 @@
 import {Point} from "./Point";
-import {IDrawable} from "./interfaces";
+import {IDrawable} from "../interfaces";
 
 export class Segment implements IDrawable {
     isCollide: boolean;

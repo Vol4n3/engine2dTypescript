@@ -1,6 +1,6 @@
 'use strict';
 
-var gulp = require('gulp'),
+let gulp = require('gulp'),
     browserSync = require('browser-sync'),
     sass = require('gulp-sass'),
     sourcemaps = require('gulp-sourcemaps'),

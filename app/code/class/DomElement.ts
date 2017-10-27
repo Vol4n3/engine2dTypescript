@@ -1,4 +1,4 @@
-import {Rectangle} from "./rectangle";
+import {Rectangle} from "./geometry/rectangle";
 
 export class DomElement extends Rectangle {
     public element: HTMLElement;
@@ -12,12 +12,15 @@ export class DomElement extends Rectangle {
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.rect(this.x, this.y, this.width, this.height);
         ctx.stroke();
+        this.update();
+    }
+    update(){
         switch (this.pointMoving) {
             case "center":
-                this.update(true);
+                this.initAt(true);
                 break;
             case "bound":
-                this.update(false);
+                this.initAt(false);
                 break;
             default:
                 this.init();

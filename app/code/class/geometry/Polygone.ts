@@ -1,7 +1,11 @@
 import {Segment} from "./Segment";
-import {IDrawable} from "./interfaces";
+import {IDrawable} from "../interfaces";
 
 export class Polygone implements IDrawable {
+    update(): void {
+        throw new Error("Method not implemented.");
+    }
+
     isCollide: boolean;
     public dName: string = "Polygone";
     public segmentList: Segment[];

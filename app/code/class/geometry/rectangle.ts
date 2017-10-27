@@ -1,4 +1,4 @@
-import {IDrawable} from "./interfaces";
+import {IDrawable} from "../interfaces";
 import {Point} from "./Point";
 
 export class Rectangle implements IDrawable {
@@ -23,7 +23,7 @@ export class Rectangle implements IDrawable {
         this.initSizePoint();
     }
 
-    update(center?: boolean) {
+    initAt(center?: boolean) {
         if (center) {
             this.x = this.centerPoint.x - this.width * 0.5;
             this.y = this.centerPoint.y - this.height * 0.5;
@@ -36,21 +36,22 @@ export class Rectangle implements IDrawable {
             this.initCenterPoint();
         }
     }
-
-    draw(ctx: CanvasRenderingContext2D): void {
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.stroke();
+    update(){
         switch (this.pointMoving) {
             case "center":
-                this.update(true);
+                this.initAt(true);
                 break;
             case "bound":
-                this.update(false);
+                this.initAt(false);
                 break;
             default:
                 this.init();
                 break;
         }
+    }
+    draw(ctx: CanvasRenderingContext2D): void {
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.stroke();
     }
 
     initOriginPoint(): void {

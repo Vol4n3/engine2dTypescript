@@ -10,18 +10,21 @@ export class Scene {
     private isPlaying: boolean;
     private bufferDraws: string[] = [];
 
-    constructor(id: string) {
+    constructor(id: string, public drawType?: string) {
+
         this.init(id);
     }
 
     init(id: string) {
-        this.scene = document.getElementById(id);
-        this.canvas = document.createElement('canvas');
-        this.scene.addEventListener('resize', this.resize);
-        this.resize();
-        this.context = this.canvas.getContext('2d');
-        this.scene.appendChild(this.canvas);
-        this.resume();
+        if(this.drawType === "canvas"){
+            this.scene = document.getElementById(id);
+            this.canvas = document.createElement('canvas');
+            this.scene.addEventListener('resize', this.resize);
+            this.resize();
+            this.context = this.canvas.getContext('2d');
+            this.scene.appendChild(this.canvas);
+        }
+            this.resume();
         requestAnimationFrame(this.draw.bind(this));
     }
 
@@ -56,14 +59,19 @@ export class Scene {
 
     private draw(): void {
         if (this.isPlaying) {
-            if (this.clearFrame) this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
+            if (this.clearFrame && this.drawType === "canvas") this.context.clearRect(0, 0, this.getWidth(), this.getHeight());
             for (let d: number = 0; d < this.drawList.length; d++) {
                 let draw = this.drawList[d].item;
-                this.context.save();
-                this.context.beginPath();
-                draw.draw(this.context);
-                this.context.closePath();
-                this.context.restore();
+                if(this.drawType === "canvas"){
+                    this.context.save();
+                    this.context.beginPath();
+                    draw.draw(this.context);
+                    this.context.closePath();
+                    this.context.restore();
+                }
+                else{
+                    draw.update();
+                }
                 if (draw.isCollide) this.checkCollision(draw, d);
             }
         }

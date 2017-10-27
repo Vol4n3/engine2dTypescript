@@ -1,7 +1,8 @@
 ///<reference path="../../../typings/globals/three/index.d.ts"/>
 import {Scene} from "../class/Scene";
-import {Point} from "../class/Point";
+import {Point} from "../class/geometry/Point";
 import {DomElement} from "../class/DomElement";
+import {Easing} from "../class/Easing";
 let scene = new Scene('scene');
 /*
 let player = new Point();
@@ -35,14 +36,20 @@ window.addEventListener('mousemove',(ev)=>{
 });
 */
 let rect = new DomElement(document.getElementById('element'));
-console.log(rect);
 scene.add(rect);
 scene.add(rect.centerPoint);
-scene.add(rect.sizePoint);
-rect.sizePoint.velocity.setX(20);
+scene.add(rect.originPoint);
+//rect.sizePoint.velocity.setX(20);
 rect.pointMoving = "bound";
+
 setTimeout(()=>{
-    rect.sizePoint.moveSpeed = 1;
-    rect.sizePoint.setTarget(new Point(200,200));
-    console.log(rect)
+    rect.originPoint.targetTime = 200;
+    rect.originPoint.travelMethod = Easing.easeOutBounce;
+    rect.originPoint.setTarget(new Point(500,500));
 },2000);
+
+setTimeout(()=>{
+    rect.originPoint.targetTime = 120;
+    rect.originPoint.travelMethod = Easing.easeInOutBack;
+    rect.originPoint.setTarget(new Point(0,0));
+},6000);
